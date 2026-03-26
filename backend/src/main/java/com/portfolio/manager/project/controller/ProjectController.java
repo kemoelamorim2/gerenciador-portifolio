@@ -1,15 +1,22 @@
 package com.portfolio.manager.project.controller;
 
+import com.portfolio.manager.exception.ApiErrorResponse;
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
 import com.portfolio.manager.project.dto.ProjectFilterRequest;
+import com.portfolio.manager.project.dto.PagedResponse;
 import com.portfolio.manager.project.dto.ProjectResponse;
 import com.portfolio.manager.project.dto.ProjectStatusUpdateRequest;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
 import com.portfolio.manager.project.service.ProjectService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import java.net.URI;
 import org.springdoc.core.annotations.ParameterObject;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -35,6 +42,15 @@ public class ProjectController {
     }
 
     @PostMapping
+    @Operation(summary = "Cria um novo projeto")
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Projeto criado com sucesso"),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Dados invalidos",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
+        )
+    })
     public ResponseEntity<ProjectResponse> create(@Valid @RequestBody ProjectCreateRequest request) {
         ProjectResponse response = projectService.create(request);
         URI location = ServletUriComponentsBuilder
@@ -47,7 +63,8 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProjectResponse>> findAll(
+    @Operation(summary = "Lista projetos com paginacao e filtros")
+    public ResponseEntity<PagedResponse<ProjectResponse>> findAll(
         @ParameterObject @ModelAttribute ProjectFilterRequest filter,
         @ParameterObject Pageable pageable
     ) {
@@ -55,11 +72,21 @@ public class ProjectController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Busca um projeto por id")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Projeto encontrado"),
+        @ApiResponse(
+            responseCode = "404",
+            description = "Projeto nao encontrado",
+            content = @Content(schema = @Schema(implementation = ApiErrorResponse.class))
+        )
+    })
     public ResponseEntity<ProjectResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(projectService.findById(id));
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Atualiza um projeto existente")
     public ResponseEntity<ProjectResponse> update(
         @PathVariable Long id,
         @Valid @RequestBody ProjectUpdateRequest request
@@ -68,6 +95,7 @@ public class ProjectController {
     }
 
     @PatchMapping("/{id}/status")
+    @Operation(summary = "Atualiza o status de um projeto")
     public ResponseEntity<ProjectResponse> updateStatus(
         @PathVariable Long id,
         @Valid @RequestBody ProjectStatusUpdateRequest request
@@ -76,6 +104,7 @@ public class ProjectController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Remove um projeto quando permitido pelas regras de negocio")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         projectService.delete(id);
         return ResponseEntity.noContent().build();

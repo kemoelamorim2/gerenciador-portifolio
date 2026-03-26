@@ -119,8 +119,8 @@ class ProjectServiceTest {
 
         var response = projectService.findAll(new ProjectFilterRequest(), PageRequest.of(0, 10));
 
-        assertEquals(1, response.getTotalElements());
-        assertEquals("Projeto Teste", response.getContent().get(0).name());
+        assertEquals(1, response.totalElements());
+        assertEquals("Projeto Teste", response.content().get(0).name());
     }
 
     @Test

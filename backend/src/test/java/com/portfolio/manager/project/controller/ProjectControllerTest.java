@@ -32,7 +32,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -81,12 +80,22 @@ class ProjectControllerTest {
 
     @Test
     void shouldListProjects() throws Exception {
-        when(projectService.findAll(any(), any(PageRequest.class)))
-            .thenReturn(new PageImpl<>(List.of(buildResponse(ProjectStatus.EM_ANALISE, RiskLevel.BAIXO))));
+        when(projectService.findAll(any(), any()))
+            .thenReturn(new com.portfolio.manager.project.dto.PagedResponse<>(
+                List.of(buildResponse(ProjectStatus.EM_ANALISE, RiskLevel.BAIXO)),
+                0,
+                10,
+                1,
+                1,
+                true,
+                true,
+                false
+            ));
 
         mockMvc.perform(get("/api/projects?page=0&size=10").with(httpBasic("admin", "admin123")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].id").value(1L));
+            .andExpect(jsonPath("$.content[0].id").value(1L))
+            .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -143,6 +152,16 @@ class ProjectControllerTest {
 
         mockMvc.perform(delete("/api/projects/1").with(httpBasic("admin", "admin123")))
             .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenProjectDoesNotExist() throws Exception {
+        when(projectService.findById(99L))
+            .thenThrow(new com.portfolio.manager.exception.ResourceNotFoundException("Project not found with id: 99"));
+
+        mockMvc.perform(get("/api/projects/99").with(httpBasic("admin", "admin123")))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Project not found with id: 99"));
     }
 
     @Test

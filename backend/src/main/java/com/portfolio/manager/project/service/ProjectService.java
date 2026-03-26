@@ -7,6 +7,7 @@ import com.portfolio.manager.member.entity.Member;
 import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
 import com.portfolio.manager.project.dto.ProjectFilterRequest;
+import com.portfolio.manager.project.dto.PagedResponse;
 import com.portfolio.manager.project.dto.ProjectResponse;
 import com.portfolio.manager.project.dto.ProjectStatusUpdateRequest;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
@@ -55,9 +56,19 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProjectResponse> findAll(ProjectFilterRequest filter, Pageable pageable) {
-        return projectRepository.findAll(ProjectSpecification.withFilters(filter), pageable)
-            .map(projectMapper::toResponse);
+    public PagedResponse<ProjectResponse> findAll(ProjectFilterRequest filter, Pageable pageable) {
+        Page<Project> page = projectRepository.findAll(ProjectSpecification.withFilters(filter), pageable);
+
+        return new PagedResponse<>(
+            page.getContent().stream().map(projectMapper::toResponse).toList(),
+            page.getNumber(),
+            page.getSize(),
+            page.getTotalElements(),
+            page.getTotalPages(),
+            page.isFirst(),
+            page.isLast(),
+            page.isEmpty()
+        );
     }
 
     @Transactional(readOnly = true)

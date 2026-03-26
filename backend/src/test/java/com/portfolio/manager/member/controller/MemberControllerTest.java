@@ -67,4 +67,14 @@ class MemberControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1L));
     }
+
+    @Test
+    void shouldReturnNotFoundWhenMemberDoesNotExist() throws Exception {
+        when(memberService.findById(99L))
+            .thenThrow(new com.portfolio.manager.exception.ResourceNotFoundException("Member not found with id: 99"));
+
+        mockMvc.perform(get("/api/members/99").with(httpBasic("admin", "admin123")))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.message").value("Member not found with id: 99"));
+    }
 }
