@@ -14,6 +14,7 @@ import com.portfolio.manager.exception.ResourceNotFoundException;
 import com.portfolio.manager.member.entity.Member;
 import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
+import com.portfolio.manager.project.dto.ProjectFilterRequest;
 import com.portfolio.manager.project.dto.ProjectStatusUpdateRequest;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
 import com.portfolio.manager.project.entity.Project;
@@ -28,9 +29,11 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 
 @ExtendWith(MockitoExtension.class)
 class ProjectServiceTest {
@@ -102,10 +105,22 @@ class ProjectServiceTest {
         Project project = createProject(1L, ProjectStatus.EM_ANALISE);
         when(projectRepository.findAll()).thenReturn(List.of(project));
 
-        var response = projectService.findAll();
+        var response = projectService.findAllWithoutPaging();
 
         assertEquals(1, response.size());
         assertEquals("Projeto Teste", response.get(0).name());
+    }
+
+    @Test
+    void shouldReturnPagedProjectsWithFilters() {
+        Project project = createProject(1L, ProjectStatus.EM_ANALISE);
+        when(projectRepository.findAll(any(Specification.class), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(project)));
+
+        var response = projectService.findAll(new ProjectFilterRequest(), PageRequest.of(0, 10));
+
+        assertEquals(1, response.getTotalElements());
+        assertEquals("Projeto Teste", response.getContent().get(0).name());
     }
 
     @Test

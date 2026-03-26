@@ -29,4 +29,7 @@ public interface ProjectMemberAllocationRepository extends JpaRepository<Project
         @Param("memberId") Long memberId,
         @Param("inactiveStatuses") Collection<ProjectStatus> inactiveStatuses
     );
+
+    @Query("select count(distinct a.member.id) from ProjectMemberAllocation a")
+    long countDistinctAllocatedMembers();
 }

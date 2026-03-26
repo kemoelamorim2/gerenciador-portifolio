@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -79,11 +81,12 @@ class ProjectControllerTest {
 
     @Test
     void shouldListProjects() throws Exception {
-        when(projectService.findAll()).thenReturn(List.of(buildResponse(ProjectStatus.EM_ANALISE, RiskLevel.BAIXO)));
+        when(projectService.findAll(any(), any(PageRequest.class)))
+            .thenReturn(new PageImpl<>(List.of(buildResponse(ProjectStatus.EM_ANALISE, RiskLevel.BAIXO))));
 
-        mockMvc.perform(get("/api/projects").with(httpBasic("admin", "admin123")))
+        mockMvc.perform(get("/api/projects?page=0&size=10").with(httpBasic("admin", "admin123")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(1L));
+            .andExpect(jsonPath("$.content[0].id").value(1L));
     }
 
     @Test

@@ -1,14 +1,18 @@
 package com.portfolio.manager.project.controller;
 
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
+import com.portfolio.manager.project.dto.ProjectFilterRequest;
 import com.portfolio.manager.project.dto.ProjectResponse;
 import com.portfolio.manager.project.dto.ProjectStatusUpdateRequest;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
 import com.portfolio.manager.project.service.ProjectService;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,8 +47,11 @@ public class ProjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ProjectResponse>> findAll() {
-        return ResponseEntity.ok(projectService.findAll());
+    public ResponseEntity<Page<ProjectResponse>> findAll(
+        @ParameterObject @ModelAttribute ProjectFilterRequest filter,
+        @ParameterObject Pageable pageable
+    ) {
+        return ResponseEntity.ok(projectService.findAll(filter, pageable));
     }
 
     @GetMapping("/{id}")

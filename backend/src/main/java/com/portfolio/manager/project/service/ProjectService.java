@@ -6,6 +6,7 @@ import com.portfolio.manager.exception.ResourceNotFoundException;
 import com.portfolio.manager.member.entity.Member;
 import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
+import com.portfolio.manager.project.dto.ProjectFilterRequest;
 import com.portfolio.manager.project.dto.ProjectResponse;
 import com.portfolio.manager.project.dto.ProjectStatusUpdateRequest;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
@@ -14,10 +15,13 @@ import com.portfolio.manager.project.enums.ProjectStatus;
 import com.portfolio.manager.project.enums.RiskLevel;
 import com.portfolio.manager.project.mapper.ProjectMapper;
 import com.portfolio.manager.project.repository.ProjectRepository;
+import com.portfolio.manager.project.specification.ProjectSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,11 +55,14 @@ public class ProjectService {
     }
 
     @Transactional(readOnly = true)
-    public List<ProjectResponse> findAll() {
-        return projectRepository.findAll()
-            .stream()
-            .map(projectMapper::toResponse)
-            .toList();
+    public Page<ProjectResponse> findAll(ProjectFilterRequest filter, Pageable pageable) {
+        return projectRepository.findAll(ProjectSpecification.withFilters(filter), pageable)
+            .map(projectMapper::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProjectResponse> findAllWithoutPaging() {
+        return projectRepository.findAll().stream().map(projectMapper::toResponse).toList();
     }
 
     @Transactional(readOnly = true)
