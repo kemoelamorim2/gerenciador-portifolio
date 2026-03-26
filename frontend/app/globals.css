@@ -1,0 +1,99 @@
+:root {
+  --bg: #f4efe7;
+  --panel: rgba(255, 255, 255, 0.72);
+  --text: #1f2937;
+  --muted: #5f6b7a;
+  --accent: #ba4a00;
+  --accent-soft: #ffd8bf;
+  --border: rgba(31, 41, 55, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, #fff4d6 0, transparent 30%),
+    radial-gradient(circle at right, #ffd9c7 0, transparent 25%),
+    linear-gradient(180deg, #f7f1e8 0%, #efe5d8 100%);
+}
+
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.hero {
+  width: min(720px, 100%);
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--panel);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 24px 70px rgba(95, 60, 31, 0.12);
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(40px, 8vw, 72px);
+  line-height: 0.95;
+}
+
+.description {
+  margin: 20px 0 0;
+  max-width: 56ch;
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.status-card {
+  margin-top: 32px;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(186, 74, 0, 0.16);
+}
+
+.status-card span {
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.status-card strong {
+  font-size: 24px;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding: 28px;
+  }
+
+  .description {
+    font-size: 16px;
+  }
+}

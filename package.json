@@ -1,0 +1,16 @@
+{
+  "name": "gerenciador-portifolio",
+  "private": true,
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:back\" \"npm run dev:front\"",
+    "dev:back": "cd backend && mvn spring-boot:run",
+    "dev:front": "cd frontend && npm run dev",
+    "install:all": "npm install --workspace frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
