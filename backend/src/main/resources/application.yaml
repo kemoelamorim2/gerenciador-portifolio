@@ -1,6 +1,11 @@
 spring:
   application:
     name: portfolio-manager
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
   datasource:
     url: jdbc:postgresql://localhost:5432/portfolio_db
     username: postgres
@@ -19,15 +24,10 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-
-  mvc:
-    pathmatch:
-      matching-strategy: ant_path_matcher
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
     operationsSorter: alpha
     tagsSorter: alpha
 

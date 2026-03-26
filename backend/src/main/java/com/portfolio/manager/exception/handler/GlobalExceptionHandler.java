@@ -4,6 +4,7 @@ import com.portfolio.manager.exception.ApiErrorResponse;
 import com.portfolio.manager.exception.BusinessRuleException;
 import com.portfolio.manager.exception.ExternalIntegrationException;
 import com.portfolio.manager.exception.ResourceNotFoundException;
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
+@Hidden
 public class GlobalExceptionHandler {
 
+    @Hidden
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResourceNotFound(
         ResourceNotFoundException exception,
@@ -25,6 +28,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, exception.getMessage(), request.getRequestURI());
     }
 
+    @Hidden
     @ExceptionHandler(BusinessRuleException.class)
     public ResponseEntity<ApiErrorResponse> handleBusinessRule(
         BusinessRuleException exception,
@@ -33,6 +37,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, exception.getMessage(), request.getRequestURI());
     }
 
+    @Hidden
     @ExceptionHandler(ExternalIntegrationException.class)
     public ResponseEntity<ApiErrorResponse> handleExternalIntegration(
         ExternalIntegrationException exception,
@@ -41,6 +46,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_GATEWAY, exception.getMessage(), request.getRequestURI());
     }
 
+    @Hidden
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
         MethodArgumentNotValidException exception,
@@ -55,6 +61,7 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, message, request.getRequestURI());
     }
 
+    @Hidden
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleUnexpected(
         Exception exception,
