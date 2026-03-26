@@ -1,14 +1,8 @@
+import { getHealth } from "@/lib/api/health";
+
 async function getBackendStatus() {
   try {
-    const response = await fetch("http://localhost:8080/api/health", {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return "backend indisponivel";
-    }
-
-    const data = (await response.json()) as { status?: string };
+    const data = await getHealth();
     return data.status ?? "sem resposta";
   } catch {
     return "backend nao iniciado";
