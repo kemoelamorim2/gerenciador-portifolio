@@ -1,5 +1,6 @@
 package com.portfolio.manager.project.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
@@ -31,4 +32,12 @@ public record ProjectCreateRequest(
     @NotNull(message = "managerId is required")
     Long managerId
 ) {
+    @AssertTrue(message = "expectedEndDate must be after or equal to startDate")
+    public boolean isValidDateRange() {
+        if (startDate == null || expectedEndDate == null) {
+            return true;
+        }
+
+        return !expectedEndDate.isBefore(startDate);
+    }
 }

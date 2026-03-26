@@ -1,6 +1,7 @@
 package com.portfolio.manager.project.dto;
 
 import com.portfolio.manager.project.enums.ProjectStatus;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -35,4 +36,21 @@ public record ProjectUpdateRequest(
     @NotNull(message = "status is required")
     ProjectStatus status
 ) {
+    @AssertTrue(message = "expectedEndDate must be after or equal to startDate")
+    public boolean isExpectedEndDateValid() {
+        if (startDate == null || expectedEndDate == null) {
+            return true;
+        }
+
+        return !expectedEndDate.isBefore(startDate);
+    }
+
+    @AssertTrue(message = "actualEndDate must be after or equal to startDate")
+    public boolean isActualEndDateValid() {
+        if (startDate == null || actualEndDate == null) {
+            return true;
+        }
+
+        return !actualEndDate.isBefore(startDate);
+    }
 }
