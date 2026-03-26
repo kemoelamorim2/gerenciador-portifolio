@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: portfolio-manager
+  datasource:
+    url: jdbc:postgresql://localhost:5432/portfolio_db
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+
+  sql:
+    init:
+      mode: never
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+server:
+  port: 8080
