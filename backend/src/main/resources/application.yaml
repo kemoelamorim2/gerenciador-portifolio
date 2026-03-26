@@ -12,6 +12,7 @@ spring:
       mode: never
 
   jpa:
+    open-in-view: false
     show-sql: true
     hibernate:
       ddl-auto: update
@@ -23,8 +24,12 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    operationsSorter: alpha
+    tagsSorter: alpha
 
 server:
   port: 8080
