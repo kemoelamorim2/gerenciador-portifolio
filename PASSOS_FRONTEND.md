@@ -258,6 +258,219 @@ frontend/
 │   ├── projects/
 │   │   ├── page.tsx
 │   │   ├── new/
+```
+
+## 4. Estado Atual do Frontend
+
+Com base na análise do código atual, o frontend já possui uma base funcional, mas ainda não cobre toda a proposta descrita no README.
+
+### O que já está implementado
+
+- dashboard inicial consumindo `health` e relatório resumido
+- listagem de projetos
+- criação de projeto
+- edição de projeto
+- detalhe de projeto
+- associação e remoção de membros no detalhe do projeto
+- camada de API separada com `axios`
+- hooks por domínio
+- tipagem compartilhada alinhada ao backend
+- topbar e biblioteca inicial de componentes reutilizáveis
+
+### O que ainda falta para atender a proposta
+
+- tela de login
+- fluxo visual de autenticação e logout
+- tela própria de membros
+- filtros de projetos
+- paginação visível e navegável
+- tela dedicada de relatório
+- melhor experiência para seleção de gerente
+- tratamento visual de erro e estados vazios mais robusto
+- refinamento do design system para uma aparência mais corporativa e consistente
+
+## 5. Diagnóstico de Aderência ao README
+
+Comparando com a proposta do projeto, o frontend hoje atende parcialmente:
+
+- `Dashboard do portfólio`: atende parcialmente
+- `Listagem de projetos com filtros e paginação`: atende parcialmente
+- `Cadastro e edição de projeto`: atende
+- `Detalhe do projeto`: atende
+- `Gestão de membros associados`: atende parcialmente
+- `Visualização do relatório resumido`: atende parcialmente
+- `Login`: não atende
+
+Conclusão:
+
+- o frontend já demonstra integração real com o backend
+- a estrutura técnica está boa para evoluir
+- ainda faltam etapas importantes para considerar a proposta do README plenamente atendida
+
+## 6. Prioridades de Implementação
+
+### Fase 1: Autenticação e Base de Navegação
+
+Objetivo:
+
+- colocar o fluxo mínimo de acesso em funcionamento
+
+Entregas:
+
+- criar `/login`
+- formulário com usuário e senha
+- persistência de credenciais via `sessionStorage`
+- botão de logout funcional
+- proteção simples de rotas no cliente
+- estado global simples de autenticação
+
+Arquivos prováveis:
+
+- `frontend/app/login/page.tsx`
+- `frontend/hooks/use-api-auth.ts`
+- `frontend/components/layout/Topbar.tsx`
+- `frontend/lib/api/auth.ts`
+
+### Fase 2: Projetos com Filtros e Paginação
+
+Objetivo:
+
+- transformar a listagem de projetos em uma tela realmente operacional
+
+Entregas:
+
+- filtros por nome
+- filtro por status
+- filtro por risco
+- filtros de faixa de orçamento
+- filtros de datas
+- paginação com navegação
+- estados de loading, vazio e erro
+
+Arquivos prováveis:
+
+- `frontend/app/projects/page.tsx`
+- `frontend/components/projects/ProjectsFilters.tsx`
+- `frontend/components/projects/ProjectsTable.tsx`
+- `frontend/types/project.ts`
+
+### Fase 3: Módulo de Membros
+
+Objetivo:
+
+- cobrir o cadastro e consulta de membros fora da tela de detalhe do projeto
+
+Entregas:
+
+- tela `/members`
+- formulário para criar membro
+- listagem de membros
+- visualização de atribuição
+- feedback de erro para regras do backend
+
+Arquivos prováveis:
+
+- `frontend/app/members/page.tsx`
+- `frontend/components/members/MemberForm.tsx`
+- `frontend/components/members/MembersTable.tsx`
+
+### Fase 4: Relatório e Dashboard Refinado
+
+Objetivo:
+
+- deixar a leitura executiva mais forte
+
+Entregas:
+
+- tela própria de relatório
+- cards executivos mais consistentes
+- tabela de resumo por status
+- visual mais polido para indicadores
+
+Arquivos prováveis:
+
+- `frontend/app/reports/page.tsx`
+- `frontend/components/reports/PortfolioSummary.tsx`
+- `frontend/components/reports/StatusSummaryTable.tsx`
+
+### Fase 5: Refino de UX
+
+Objetivo:
+
+- melhorar a experiência de uso e reduzir fricções
+
+Entregas:
+
+- seleção de gerente baseada em membros reais
+- toasts padronizados para sucesso e erro
+- parser central de erro da API
+- textos mais claros
+- confirmação de ações destrutivas
+- melhorias de acessibilidade
+
+## 7. Design System Proposto
+
+Direção visual recomendada para uma empresa de gestão de projetos:
+
+- visual minimalista
+- sensação corporativa e confiável
+- layout fluido
+- boa legibilidade
+- contraste equilibrado
+
+### Identidade sugerida
+
+- base clara com tons de areia fria e cinza grafite
+- acento principal em cobre queimado ou azul petróleo
+- superfícies translúcidas leves em dashboards e painéis
+- tipografia sóbria, sem aparência genérica
+
+### Componentes base
+
+- `Topbar`
+- `PageHeader`
+- `StatCard`
+- `FilterBar`
+- `DataTable`
+- `EmptyState`
+- `ErrorState`
+- `FormSection`
+- `StatusBadge`
+- `RiskBadge`
+
+### Regras visuais
+
+- usar espaçamento generoso
+- evitar excesso de bordas pesadas
+- preferir cards com hierarquia clara
+- usar badges para status e risco
+- dar destaque real aos números do dashboard
+- manter consistência entre telas de leitura e edição
+
+## 8. Próxima Sequência Recomendada
+
+Ordem sugerida para execução:
+
+1. implementar login
+2. corrigir topbar e fluxo de logout
+3. adicionar filtros e paginação em projetos
+4. criar módulo de membros
+5. criar tela dedicada de relatório
+6. refinar design system e estados de UX
+
+## 9. Critério de Pronto do Frontend
+
+Podemos considerar o frontend alinhado à proposta quando ele entregar:
+
+- login funcional
+- dashboard com dados reais
+- listagem de projetos com filtros e paginação
+- cadastro, edição e detalhe de projetos
+- módulo de membros
+- gestão de membros por projeto
+- relatório resumido visível
+- linguagem visual consistente e apresentável
+- integração estável com o backend
 │   │   └── [id]/
 │   ├── members/
 │   └── reports/

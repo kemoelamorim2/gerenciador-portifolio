@@ -1,16 +1,15 @@
 "use client";
 
-import {
-  clearBasicAuth,
-  getStoredBasicAuth,
-  saveBasicAuth,
-  type BasicAuthCredentials,
-} from "@/lib/api/auth";
+import { useAuth } from "@/components/auth/AuthProvider";
+import type { BasicAuthCredentials } from "@/lib/api/auth";
 
 export function useApiAuth() {
+  const { isAuthenticated, isReady, login, logout } = useAuth();
+
   return {
-    saveCredentials: (credentials: BasicAuthCredentials) => saveBasicAuth(credentials),
-    clearCredentials: () => clearBasicAuth(),
-    hasCredentials: () => Boolean(getStoredBasicAuth()),
+    saveCredentials: (credentials: BasicAuthCredentials) => login(credentials),
+    clearCredentials: () => logout(),
+    hasCredentials: () => isAuthenticated,
+    isReady: () => isReady,
   };
 }
