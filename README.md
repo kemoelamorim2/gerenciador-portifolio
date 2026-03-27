@@ -1,210 +1,97 @@
 # Gerenciador de Portfólio
 
-Sistema para gerenciamento do portfólio de projetos de uma empresa, com acompanhamento do ciclo de vida dos projetos desde a análise de viabilidade até a finalização, incluindo equipe, orçamento, risco e indicadores consolidados.
+Sistema para gerenciamento do portfólio de projetos de uma empresa, com backend em Spring Boot e frontend em Next.js.
 
-## Objetivo
+## Visão Geral
 
-Este repositório será organizado como um monorepo com duas aplicações:
+Este repositório está organizado como monorepo com duas aplicações:
 
-1. `backend/`: API REST em Java com Spring Boot
-2. `frontend/`: interface web em React com Next.js e shadcn/ui
+- `backend/`: API REST em Java com Spring Boot
+- `frontend/`: interface web em React com Next.js
 
-O projeto foi planejado com base em um desafio técnico para vaga de Desenvolvedor Java, preservando as regras de negócio e os critérios de avaliação propostos, mas com uma arquitetura separada entre backend e frontend para melhor experiência de uso, manutenção e apresentação.
+O projeto foi desenvolvido para atender um desafio técnico de gestão de portfólio de projetos, cobrindo regras de negócio de ciclo de vida, risco, equipe, orçamento e consolidação de indicadores.
 
-## Escopo Funcional
+## Funcionalidades Implementadas
 
-O sistema deverá permitir:
+- cadastro, consulta, atualização e exclusão de projetos
+- cálculo dinâmico de risco com base em orçamento e prazo
+- controle de fluxo de status com validação de sequência
+- bloqueio de exclusão para projetos em estados não permitidos
+- integração com API REST mockada de membros
+- alocação de membros em projetos com validações de capacidade e elegibilidade
+- relatório resumido do portfólio
+- paginação e filtros na listagem de projetos
+- autenticação básica no backend
+- documentação interativa da API
+- interface web para operação do fluxo principal
 
-- CRUD completo de projetos
-- Cálculo dinâmico de classificação de risco
-- Controle de transição de status com fluxo fixo
-- Restrição de exclusão conforme status do projeto
-- Integração com API REST externa mockada para criação e consulta de membros
-- Associação de membros aos projetos com regras de elegibilidade e limite de alocação
-- Geração de relatório resumido do portfólio
-- Paginação e filtros na listagem de projetos
-- Segurança básica para autenticação e autorização
-- Documentação interativa da API
+## Arquitetura
 
-## Regras de Negócio
+### Backend
 
-### Projeto
+- arquitetura MVC
+- separação entre `controller`, `service`, `repository`, `dto` e `entity`
+- persistência com JPA + Hibernate
+- tratamento global de exceções
+- autenticação com Spring Security
+- documentação OpenAPI
+- testes automatizados com JUnit e Spring Test
 
-Cada projeto deverá conter os seguintes campos:
+### Frontend
 
-- Nome
-- Data de início
-- Previsão de término
-- Data real de término
-- Orçamento total
-- Descrição
-- Gerente responsável
-- Status atual
+- Next.js com App Router
+- componentes reutilizáveis com `shadcn/ui`
+- camada de integração HTTP isolada com `axios`
+- hooks para consumo dos módulos da API
+- autenticação básica consumindo o backend
+- suporte a tema claro e escuro
 
-### Classificação de risco
+## Escopo Principal
 
-A classificação de risco será calculada dinamicamente com base em orçamento e prazo:
+O sistema foi construído com foco em:
 
-- Baixo risco: orçamento até `R$ 100.000` e prazo menor ou igual a `3 meses`
-- Médio risco: orçamento entre `R$ 100.001` e `R$ 500.000` ou prazo entre `3 e 6 meses`
-- Alto risco: orçamento acima de `R$ 500.000` ou prazo superior a `6 meses`
+- CRUD de projetos
+- cálculo dinâmico de risco
+- fluxo controlado de status
+- alocação de membros em projetos
+- relatório resumido do portfólio
+- autenticação básica
+- documentação da API
 
-### Fluxo de status
-
-Os status possíveis serão fixos e deverão respeitar a seguinte sequência:
-
-`em análise -> análise realizada -> análise aprovada -> iniciado -> planejado -> em andamento -> encerrado`
-
-Regra adicional:
-
-- `cancelado` pode ser aplicado a qualquer momento
-- Não será permitido pular etapas na transição de status
-
-### Exclusão de projetos
-
-Projetos com status abaixo não poderão ser excluídos:
-
-- `iniciado`
-- `em andamento`
-- `encerrado`
-
-### Membros
-
-O cadastro de membros não será realizado diretamente no sistema principal.
-
-Será disponibilizada uma API REST externa mockada para:
-
-- Criar membros
-- Consultar membros
-
-Cada membro terá pelo menos:
-
-- Nome
-- Atribuição
-
-Regras para associação em projetos:
-
-- Apenas membros com atribuição `funcionário` poderão ser associados
-- Cada projeto deverá ter no mínimo `1` e no máximo `10` membros
-- Um membro não poderá estar alocado em mais de `3` projetos simultaneamente com status diferente de `encerrado` ou `cancelado`
-
-### Relatório do portfólio
-
-Deverá existir um endpoint de resumo com:
-
-- Quantidade de projetos por status
-- Total orçado por status
-- Média de duração dos projetos encerrados
-- Total de membros únicos alocados
-
-## Arquitetura do Repositório
-
-Estrutura planejada:
+## Estrutura do Repositório
 
 ```text
 .
 ├── backend/
-│   ├── src/main/java/...
+│   ├── src/main/java/
 │   ├── src/main/resources/
-│   ├── src/test/java/...
+│   ├── src/test/java/
 │   └── pom.xml
 ├── frontend/
 │   ├── app/
+│   ├── components/
+│   ├── hooks/
+│   ├── lib/
 │   ├── public/
 │   └── package.json
+├── docker-compose.yml
 └── README.md
 ```
 
-## Como executar o projeto
-
-### Pré-requisitos
-
-- Java `17`
-- Maven `3.9+`
-- Node.js `24+`
-- Docker e Docker Compose
-
-### Subindo o banco de dados
-
-Na raiz do repositório:
-
-```bash
-docker compose up -d postgres
-```
-
-O PostgreSQL ficará disponível com as seguintes credenciais locais:
-
-- Banco: `portfolio_db`
-- Usuário: `postgres`
-- Senha: `admin`
-
-### Executando o backend
-
-```bash
-cd backend
-mvn spring-boot:run
-```
-
-A API ficará disponível em:
-
-- `http://localhost:8080`
-- Health check: `http://localhost:8080/api/health`
-- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
-- API mockada de membros: `http://localhost:8080/mock-api/members`
-
-Credenciais iniciais da autenticação básica:
-
-- Usuário: `admin`
-- Senha: `admin123`
-
-### Executando o frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-O frontend ficará disponível em:
-
-- `http://localhost:3000`
-
-### Executando os dois projetos a partir da raiz
-
-Depois de instalar as dependências do frontend e da raiz:
-
-```bash
-npm install
-npm run install:all
-npm run dev
-```
-
-Scripts disponíveis na raiz:
-
-- `npm run dev`: sobe backend e frontend em paralelo
-- `npm run dev:back`: sobe apenas o backend
-- `npm run dev:front`: sobe apenas o frontend
-- `npm run install:all`: instala dependências do frontend
-
-## Stack Tecnológica
+## Tecnologias
 
 ### Backend
 
-- Java
+- Java 17
 - Spring Boot
 - Spring Web
 - Spring Data JPA
 - Hibernate
 - Spring Security
-- Spring Validation
-- Spring OAuth2 Client
-- JWT
-- Spring Mail
-- Thymeleaf
-- Swagger / OpenAPI
 - PostgreSQL
-- Lombok
-- JUnit e Spring Security Test
+- Spring Validation
+- OpenAPI
+- JUnit
 - H2 para testes
 
 ### Frontend
@@ -213,88 +100,275 @@ Scripts disponíveis na raiz:
 - Next.js
 - TypeScript
 - shadcn/ui
-- Integração com a API REST do backend
+- Axios
 
-## Dependências previstas no backend
+## Pré-requisitos
 
-Dependências já definidas para a aplicação Spring Boot:
+Antes de rodar o projeto localmente, você precisa ter instalado:
 
-- `spring-boot-starter-data-jpa`
-- `spring-boot-starter-oauth2-client`
-- `spring-boot-starter-security`
-- `spring-boot-starter-validation`
-- `spring-boot-starter-web`
-- `spring-boot-starter-mail`
-- `spring-boot-starter-thymeleaf`
-- `io.jsonwebtoken:jjwt-api`
-- `io.jsonwebtoken:jjwt-impl`
-- `io.jsonwebtoken:jjwt-jackson`
-- `org.springdoc:springdoc-openapi-starter-webmvc-api`
-- `org.postgresql:postgresql`
-- `org.projectlombok:lombok`
-- `spring-boot-starter-test`
-- `spring-security-test`
-- `com.h2database:h2`
+- Java `17`
+- Maven `3.9+`
+- Node.js `24+`
+- npm
+- Docker
+- Docker Compose
 
-## Diretrizes de Implementação
+## Configuração Local
 
-O backend deverá seguir:
+O fluxo recomendado para executar localmente é:
 
-- Arquitetura MVC
-- Separação clara entre camadas `controller`, `service` e `repository`
-- Uso de DTOs e mapeamento dedicado entre camadas
-- Tratamento global de exceções
-- Clean Code e princípios SOLID
-- Persistência com JPA + Hibernate
-- Segurança básica com Spring Security
-- Testes unitários com cobertura mínima de `70%` nas regras de negócio
+1. subir o container do PostgreSQL
+2. confirmar que o banco está disponível
+3. subir o backend
+4. subir o frontend
 
-## Proposta de módulos do backend
+## 1. Subindo o Docker
 
-Módulos centrais previstos:
+Na raiz do projeto, rode:
 
-- `project`: gestão de projetos
-- `member`: integração com serviço externo de membros
-- `allocation`: associação de membros aos projetos
-- `portfolio-report`: consolidação de indicadores
-- `security`: autenticação e autorização
+```bash
+docker compose up -d postgres
+```
 
-## Proposta de telas do frontend
+Esse comando sobe apenas o banco PostgreSQL definido no [docker-compose.yml](/home/kemoel/projects/gerenciador-portifolio/docker-compose.yml).
 
-Telas iniciais previstas:
+Para verificar se o container está ativo:
 
-- Dashboard do portfólio
-- Listagem de projetos com filtros e paginação
-- Cadastro e edição de projeto
-- Detalhe do projeto
-- Gestão de membros associados
-- Visualização do relatório resumido
-- Login
+```bash
+docker compose ps
+```
 
-## Critérios de Qualidade
+Se quiser ver os logs do banco:
 
-Os principais critérios considerados neste projeto são:
+```bash
+docker compose logs -f postgres
+```
 
-- Clareza arquitetural
-- Consistência das regras de negócio
-- Legibilidade do código
-- Testabilidade
-- Documentação da API
-- Segurança básica funcional
-- Boa experiência de uso no frontend
+## 2. Banco de Dados
 
-## Roadmap Inicial
+O backend usa PostgreSQL local com estas credenciais:
 
-1. Estruturar o monorepo com `backend` e `frontend`
-2. Configurar o backend com Spring Boot, PostgreSQL, segurança e documentação OpenAPI
-3. Modelar entidades, DTOs, regras de negócio e fluxo de status
-4. Implementar API mockada ou mecanismo de simulação para membros
-5. Criar interface no frontend para operação do portfólio
-6. Adicionar testes unitários e refinamentos finais
+- banco: `portfolio_db`
+- usuário: `postgres`
+- senha: `admin`
+- porta: `5432`
 
-## Observações
+Essas configurações estão alinhadas com:
 
-- O projeto evitará qualquer uso do nome proibido no enunciado em arquivos, pastas, código ou documentação.
-- O foco inicial deste repositório é consolidar uma base sólida de arquitetura e documentação antes da implementação.
-- Esta base inicial contém um endpoint simples de verificação no backend e uma página inicial no frontend para validar a integração local.
-- O backend libera sem autenticação apenas os endpoints de health check e Swagger nesta etapa inicial.
+- [docker-compose.yml](/home/kemoel/projects/gerenciador-portifolio/docker-compose.yml)
+- [application.yaml](/home/kemoel/projects/gerenciador-portifolio/backend/src/main/resources/application.yaml)
+
+Se for a primeira vez ou se houver conflito com volume antigo, você pode recriar o banco:
+
+```bash
+docker compose down -v
+docker compose up -d postgres
+```
+
+Use esse comando com cuidado, porque ele remove o volume do banco local do projeto.
+
+## 3. Subindo o Backend
+
+Entre na pasta do backend:
+
+```bash
+cd backend
+```
+
+Rode a aplicação:
+
+```bash
+mvn spring-boot:run
+```
+
+Se quiser garantir recompilação limpa antes:
+
+```bash
+mvn clean spring-boot:run
+```
+
+### URLs do backend
+
+Depois que o backend subir, ele ficará disponível em:
+
+- API principal: `http://localhost:8080`
+- health check: `http://localhost:8080/api/health`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- API mockada de membros: `http://localhost:8080/mock-api/members`
+
+### Autenticação do backend
+
+A API usa autenticação básica.
+
+Credenciais locais:
+
+- usuário: `admin`
+- senha: `admin123`
+
+## 4. Subindo o Frontend
+
+Em outro terminal, entre na pasta do frontend:
+
+```bash
+cd frontend
+```
+
+Instale as dependências:
+
+```bash
+npm install
+```
+
+Suba a aplicação:
+
+```bash
+npm run dev
+```
+
+O frontend ficará disponível em:
+
+- `http://localhost:3000`
+
+## 5. Ordem Recomendada de Execução
+
+Se quiser subir tudo sem erro de dependência entre serviços, siga exatamente esta sequência:
+
+1. iniciar o Docker
+
+```bash
+docker compose up -d postgres
+```
+
+2. verificar se o banco está ativo
+
+```bash
+docker compose ps
+```
+
+3. subir o backend
+
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+4. abrir outro terminal e subir o frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+5. acessar no navegador
+
+- frontend: `http://localhost:3000`
+- swagger: `http://localhost:8080/swagger-ui/index.html`
+
+## 6. Rodando a API Mockada de Membros
+
+O sistema principal não deve cadastrar membros diretamente pela interface principal.
+
+Para atender o requisito do desafio, existe uma API REST mockada dedicada em:
+
+- `GET /mock-api/members`
+- `GET /mock-api/members/{id}`
+- `POST /mock-api/members`
+
+Além disso, o backend já sobe com uma carga inicial de membros mockados via:
+
+- [MockMemberDataSeeder.java](/home/kemoel/projects/gerenciador-portifolio/backend/src/main/java/com/portfolio/manager/member/config/MockMemberDataSeeder.java)
+
+Isso permite usar o sistema sem precisar cadastrar manualmente membros logo no primeiro uso.
+
+## 7. Dados Iniciais
+
+Quando a tabela `members` está vazia, o backend cria automaticamente membros iniciais como:
+
+- `Ana Martins` / `funcionario`
+- `Carlos Lima` / `funcionario`
+- `Juliana Rocha` / `funcionario`
+- `Pedro Henrique` / `funcionario`
+- `Larissa Gomes` / `funcionario`
+- `Rafael Costa` / `funcionario`
+- `Marina Alves` / `gerente`
+- `Bruno Ferreira` / `analista`
+- `Camila Nunes` / `coordenador`
+- `Felipe Barros` / `designer`
+- `Patricia Melo` / `qa`
+- `Thiago Ribeiro` / `tech lead`
+
+## 8. Comandos Úteis
+
+### Backend
+
+Compilar:
+
+```bash
+cd backend
+mvn clean compile
+```
+
+Rodar testes:
+
+```bash
+cd backend
+mvn test
+```
+
+### Frontend
+
+Build de produção:
+
+```bash
+cd frontend
+npm run build
+```
+
+## 9. Possíveis Problemas Locais
+
+### Porta 5432 em uso
+
+Se você já tiver outro PostgreSQL rodando localmente, o Docker pode não conseguir subir na mesma porta.
+
+Nesse caso:
+
+- pare a instância local conflitante
+- ou ajuste a porta no [docker-compose.yml](/home/kemoel/projects/gerenciador-portifolio/docker-compose.yml)
+
+### Erro de autenticação no banco
+
+Se o backend reclamar de usuário ou senha incorretos:
+
+```bash
+docker compose down -v
+docker compose up -d postgres
+```
+
+### Frontend sem acessar a API
+
+Verifique se:
+
+- o backend está rodando na porta `8080`
+- o frontend está rodando na porta `3000`
+- a autenticação foi feita com `admin/admin123`
+
+## 10. Fluxo de Demonstração
+
+Uma sequência simples para demonstrar o projeto:
+
+1. abrir o frontend
+2. fazer login com `admin / admin123`
+3. listar projetos
+4. criar um novo projeto
+5. visualizar detalhe do projeto
+6. consultar membros mockados
+7. alocar membros ao projeto
+8. consultar o relatório do portfólio
+
+## 11. Observações
+
+- a interface principal consome a API mockada de membros, mas não expõe o cadastro direto como fluxo de negócio principal
+- os membros iniciais são carregados automaticamente para facilitar os testes locais
+- a exclusão de projetos respeita as regras de status e remove alocações vinculadas antes do delete quando permitido
