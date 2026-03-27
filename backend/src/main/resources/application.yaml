@@ -1,6 +1,9 @@
 spring:
   application:
     name: portfolio-manager
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   devtools:
     restart:
       enabled: false
@@ -27,9 +30,6 @@ spring:
 springdoc:
   api-docs:
     path: /v3/api-docs
-  swagger-ui:
-    operationsSorter: alpha
-    tagsSorter: alpha
 
 server:
   port: 8080

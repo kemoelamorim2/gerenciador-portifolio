@@ -5,27 +5,31 @@ import com.portfolio.manager.project.dto.ProjectCreateRequest;
 import com.portfolio.manager.project.dto.ProjectResponse;
 import com.portfolio.manager.project.dto.ProjectUpdateRequest;
 import com.portfolio.manager.project.entity.Project;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProjectMapper {
 
-    private final ModelMapper modelMapper;
-
-    public ProjectMapper(ModelMapper modelMapper) {
-        this.modelMapper = modelMapper;
-    }
-
     public Project toEntity(ProjectCreateRequest request, Member manager) {
-        Project project = modelMapper.map(request, Project.class);
+        Project project = new Project();
+        project.setName(request.name());
+        project.setStartDate(request.startDate());
+        project.setExpectedEndDate(request.expectedEndDate());
+        project.setBudget(request.budget());
+        project.setDescription(request.description());
         project.setManager(manager);
         return project;
     }
 
     public void updateEntity(ProjectUpdateRequest request, Project project, Member manager) {
-        modelMapper.map(request, project);
+        project.setName(request.name());
+        project.setStartDate(request.startDate());
+        project.setExpectedEndDate(request.expectedEndDate());
+        project.setActualEndDate(request.actualEndDate());
+        project.setBudget(request.budget());
+        project.setDescription(request.description());
         project.setManager(manager);
+        project.setStatus(request.status());
     }
 
     public ProjectResponse toResponse(Project project) {
