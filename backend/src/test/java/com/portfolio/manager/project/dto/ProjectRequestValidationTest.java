@@ -26,8 +26,10 @@ class ProjectRequestValidationTest {
             "",
             null,
             null,
+            null,
             BigDecimal.ZERO,
             "",
+            null,
             null
         );
 
@@ -42,9 +44,11 @@ class ProjectRequestValidationTest {
             "Projeto XPTO",
             LocalDate.now(),
             LocalDate.now().plusDays(30),
+            null,
             new BigDecimal("120000.00"),
             "Descricao valida",
-            1L
+            1L,
+            null
         );
 
         Set<?> violations = validator.validate(request);

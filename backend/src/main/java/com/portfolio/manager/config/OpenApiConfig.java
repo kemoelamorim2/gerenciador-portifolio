@@ -17,51 +17,41 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-     @Bean
+    @Bean
     public OpenAPI customOpenAPI() {
-
         Server localServer = new Server()
-                .url("http://localhost:8080")
-                .description("Servidor Local");
+            .url("http://localhost:8080")
+            .description("Servidor local");
 
         Server prodServer = new Server()
-                .url("https://api.gerenciador.com")
-                .description("Servidor Produção");
+            .url("https://api.portfolio-manager.com")
+            .description("Servidor de produção");
 
-        // Define o esquema de segurança JWT
-        SecurityScheme jwtScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.HTTP)
-                .scheme("bearer")
-                .bearerFormat("JWT")
-                .description("JWT Token");
-
-        // Define o esquema de segurança API Key
-        SecurityScheme apiKeyScheme = new SecurityScheme()
-                .type(SecurityScheme.Type.APIKEY)
-                .in(SecurityScheme.In.HEADER)
-                .name("X-API-Key")
-                .description("API Key para autenticação");
+        SecurityScheme basicAuthScheme = new SecurityScheme()
+            .type(SecurityScheme.Type.HTTP)
+            .scheme("basic")
+            .description("Autenticação HTTP Basic para acesso aos endpoints protegidos");
 
         return new OpenAPI()
-                .info(new Info()
-                        .title("Gerenciador API")
-                        .version("v1.0.0")
-                        .description("API responsável por gerenciamento de pagamentos, assinaturas e multi-tenant.")
-                        .contact(new Contact()
-                                .name("Kemoel Amorim")
-                                .email("contato@gerenciador.com")
-                                .url("https://gerenciador.com"))
-                        .license(new License()
-                                .name("Apache 2.0")
-                                .url("http://springdoc.org")))
-                .servers(List.of(localServer, prodServer))
-                .externalDocs(new ExternalDocumentation()
-                        .description("Documentação Completa")
-                        .url("https://docs.gerenciador.com"))
-                .components(new io.swagger.v3.oas.models.Components()
-                        .addSecuritySchemes("JWT", jwtScheme)
-                        .addSecuritySchemes("ApiKey", apiKeyScheme))
-                .addSecurityItem(new SecurityRequirement().addList("JWT"))
-                .addSecurityItem(new SecurityRequirement().addList("ApiKey"));
+            .info(new Info()
+                .title("Portfólio Manager API")
+                .version("v1.0.0")
+                .description(
+                    "API para gestão do portfólio de projetos, incluindo projetos, membros, alocações e indicadores consolidados."
+                )
+                .contact(new Contact()
+                    .name("Kemoel Amorim")
+                    .email("contato@portfolio-manager.com")
+                    .url("https://portfolio-manager.com"))
+                .license(new License()
+                    .name("Apache 2.0")
+                    .url("https://springdoc.org")))
+            .servers(List.of(localServer, prodServer))
+            .externalDocs(new ExternalDocumentation()
+                .description("Guia de uso da API")
+                .url("https://portfolio-manager.com/docs"))
+            .components(new io.swagger.v3.oas.models.Components()
+                .addSecuritySchemes("BasicAuth", basicAuthScheme))
+            .addSecurityItem(new SecurityRequirement().addList("BasicAuth"));
     }
 }

@@ -28,9 +28,11 @@ export type ProjectCreateRequest = {
   name: string;
   startDate: string;
   expectedEndDate: string;
+  actualEndDate: string | null;
   budget: number;
   description: string;
   managerId: number;
+  status?: ProjectStatus;
 };
 
 export type ProjectUpdateRequest = {

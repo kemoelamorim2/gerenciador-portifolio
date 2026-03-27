@@ -1,10 +1,12 @@
 package com.portfolio.manager.project.service;
 
+import com.portfolio.manager.allocation.repository.ProjectMemberAllocationRepository;
 import com.portfolio.manager.exception.InvalidStatusTransitionException;
+import com.portfolio.manager.exception.MemberAllocationException;
 import com.portfolio.manager.exception.ProjectDeletionNotAllowedException;
 import com.portfolio.manager.exception.ResourceNotFoundException;
+import com.portfolio.manager.member.client.MemberClient;
 import com.portfolio.manager.member.entity.Member;
-import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.dto.ProjectCreateRequest;
 import com.portfolio.manager.project.dto.ProjectFilterRequest;
 import com.portfolio.manager.project.dto.PagedResponse;
@@ -30,25 +32,31 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
-    private final MemberRepository memberRepository;
+    private final MemberClient memberClient;
+    private final ProjectMemberAllocationRepository allocationRepository;
     private final ProjectMapper projectMapper;
 
     public ProjectService(
         ProjectRepository projectRepository,
-        MemberRepository memberRepository,
+        MemberClient memberClient,
+        ProjectMemberAllocationRepository allocationRepository,
         ProjectMapper projectMapper
     ) {
         this.projectRepository = projectRepository;
-        this.memberRepository = memberRepository;
+        this.memberClient = memberClient;
+        this.allocationRepository = allocationRepository;
         this.projectMapper = projectMapper;
     }
 
     @Transactional
     public ProjectResponse create(ProjectCreateRequest request) {
         Member manager = findManagerById(request.managerId());
+        ProjectStatus initialStatus = request.status() != null ? request.status() : ProjectStatus.EM_ANALISE;
+
+        validateInitialStatus(initialStatus);
 
         Project project = projectMapper.toEntity(request, manager);
-        project.setStatus(ProjectStatus.EM_ANALISE);
+        project.setStatus(initialStatus);
         project.setRiskLevel(calculateRiskLevel(request.startDate(), request.expectedEndDate(), request.budget()));
 
         Project savedProject = projectRepository.save(project);
@@ -87,6 +95,7 @@ public class ProjectService {
         Member manager = findManagerById(request.managerId());
 
         validateStatusTransition(project.getStatus(), request.status());
+        validateMinimumMembersForOperationalStatuses(id, request.status());
 
         projectMapper.updateEntity(request, project, manager);
         project.setRiskLevel(calculateRiskLevel(request.startDate(), request.expectedEndDate(), request.budget()));
@@ -100,6 +109,7 @@ public class ProjectService {
         Project project = findProjectEntityById(id);
 
         validateStatusTransition(project.getStatus(), request.status());
+        validateMinimumMembersForOperationalStatuses(id, request.status());
 
         project.setStatus(request.status());
         Project savedProject = projectRepository.save(project);
@@ -117,6 +127,7 @@ public class ProjectService {
             );
         }
 
+        allocationRepository.deleteAllByProjectId(id);
         projectRepository.delete(project);
     }
 
@@ -153,10 +164,35 @@ public class ProjectService {
         }
     }
 
+    private void validateInitialStatus(ProjectStatus initialStatus) {
+        if (initialStatus != ProjectStatus.EM_ANALISE && initialStatus != ProjectStatus.CANCELADO) {
+            throw new InvalidStatusTransitionException(
+                "A project can only be created with status EM_ANALISE or CANCELADO"
+            );
+        }
+    }
+
     private boolean cannotBeDeleted(ProjectStatus status) {
         return status == ProjectStatus.INICIADO
             || status == ProjectStatus.EM_ANDAMENTO
             || status == ProjectStatus.ENCERRADO;
+    }
+
+    private void validateMinimumMembersForOperationalStatuses(Long projectId, ProjectStatus targetStatus) {
+        if (
+            targetStatus == ProjectStatus.INICIADO
+                || targetStatus == ProjectStatus.PLANEJADO
+                || targetStatus == ProjectStatus.EM_ANDAMENTO
+                || targetStatus == ProjectStatus.ENCERRADO
+        ) {
+            boolean hasMembers = allocationRepository.existsByProjectId(projectId);
+
+            if (!hasMembers) {
+                throw new MemberAllocationException(
+                    "Projects must have at least 1 allocated member before moving to operational statuses"
+                );
+            }
+        }
     }
 
     private Project findProjectEntityById(Long id) {
@@ -165,7 +201,10 @@ public class ProjectService {
     }
 
     private Member findManagerById(Long managerId) {
-        return memberRepository.findById(managerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Manager not found with id: " + managerId));
+        try {
+            return memberClient.findById(managerId);
+        } catch (ResourceNotFoundException exception) {
+            throw new ResourceNotFoundException("Manager not found with id: " + managerId);
+        }
     }
 }

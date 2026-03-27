@@ -59,9 +59,11 @@ class ProjectControllerTest {
             "Projeto A",
             LocalDate.of(2026, 3, 26),
             LocalDate.of(2026, 6, 26),
+            null,
             new BigDecimal("100000.00"),
             "Descricao",
-            1L
+            1L,
+            ProjectStatus.EM_ANALISE
         );
         ProjectResponse response = buildResponse(ProjectStatus.EM_ANALISE, RiskLevel.BAIXO);
 
@@ -169,8 +171,10 @@ class ProjectControllerTest {
             "",
             null,
             null,
+            null,
             BigDecimal.ZERO,
             "",
+            null,
             null
         );
 

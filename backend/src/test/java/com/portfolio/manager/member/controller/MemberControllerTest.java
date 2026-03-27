@@ -41,12 +41,12 @@ class MemberControllerTest {
         MemberRequest request = new MemberRequest("Ana", "funcionario");
         when(memberService.create(any(MemberRequest.class))).thenReturn(new MemberResponse(1L, "Ana", "funcionario"));
 
-        mockMvc.perform(post("/api/members")
+        mockMvc.perform(post("/mock-api/members")
                 .with(httpBasic("admin", "admin123"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
-            .andExpect(header().string("Location", "http://localhost/api/members/1"))
+            .andExpect(header().string("Location", "http://localhost/mock-api/members/1"))
             .andExpect(jsonPath("$.assignment").value("funcionario"));
     }
 
@@ -54,7 +54,7 @@ class MemberControllerTest {
     void shouldListMembers() throws Exception {
         when(memberService.findAll()).thenReturn(List.of(new MemberResponse(1L, "Ana", "funcionario")));
 
-        mockMvc.perform(get("/api/members").with(httpBasic("admin", "admin123")))
+        mockMvc.perform(get("/mock-api/members").with(httpBasic("admin", "admin123")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[0].name").value("Ana"));
     }
@@ -63,7 +63,7 @@ class MemberControllerTest {
     void shouldFindMemberById() throws Exception {
         when(memberService.findById(1L)).thenReturn(new MemberResponse(1L, "Ana", "funcionario"));
 
-        mockMvc.perform(get("/api/members/1").with(httpBasic("admin", "admin123")))
+        mockMvc.perform(get("/mock-api/members/1").with(httpBasic("admin", "admin123")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1L));
     }
@@ -73,7 +73,7 @@ class MemberControllerTest {
         when(memberService.findById(99L))
             .thenThrow(new com.portfolio.manager.exception.ResourceNotFoundException("Member not found with id: 99"));
 
-        mockMvc.perform(get("/api/members/99").with(httpBasic("admin", "admin123")))
+        mockMvc.perform(get("/mock-api/members/99").with(httpBasic("admin", "admin123")))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.message").value("Member not found with id: 99"));
     }

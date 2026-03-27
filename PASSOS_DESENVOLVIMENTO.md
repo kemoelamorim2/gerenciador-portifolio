@@ -7,7 +7,7 @@ O objetivo é conduzir o desenvolvimento com foco em:
 - cobertura completa dos requisitos do desafio
 - arquitetura MVC bem definida
 - boas práticas de Clean Code e SOLID
-- uso de DTOs e mapeamento com `ModelMapper`
+- uso de DTOs e mapeamento manual dedicado
 - tratamento global de exceções
 - cobertura consistente de testes em todas as camadas
 
@@ -40,7 +40,7 @@ Antes das regras de negócio, preparar a base técnica:
 
 - configurar `Spring Security` com autenticação básica em memória
 - configurar `Swagger/OpenAPI`
-- adicionar `ModelMapper` para conversão entre entidades e DTOs
+- estruturar mapeadores dedicados para conversão entre entidades e DTOs
 - configurar tratamento global de exceções com `@RestControllerAdvice`
 - configurar cobertura com `JaCoCo`
 - ajustar perfis para desenvolvimento e testes
@@ -49,7 +49,6 @@ Antes das regras de negócio, preparar a base técnica:
 
 Adicionar ao backend:
 
-- `org.modelmapper:modelmapper`
 - plugin `jacoco-maven-plugin`
 
 Opcionalmente:

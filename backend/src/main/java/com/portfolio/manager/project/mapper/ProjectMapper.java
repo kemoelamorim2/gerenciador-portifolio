@@ -15,6 +15,7 @@ public class ProjectMapper {
         project.setName(request.name());
         project.setStartDate(request.startDate());
         project.setExpectedEndDate(request.expectedEndDate());
+        project.setActualEndDate(request.actualEndDate());
         project.setBudget(request.budget());
         project.setDescription(request.description());
         project.setManager(manager);

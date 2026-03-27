@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import com.portfolio.manager.project.enums.ProjectStatus;
 
 public record ProjectCreateRequest(
     @NotBlank(message = "name is required")
@@ -21,6 +22,8 @@ public record ProjectCreateRequest(
     @FutureOrPresent(message = "expectedEndDate must be today or a future date")
     LocalDate expectedEndDate,
 
+    LocalDate actualEndDate,
+
     @DecimalMin(value = "0.01", message = "budget must be greater than zero")
     @NotNull(message = "budget is required")
     BigDecimal budget,
@@ -30,7 +33,9 @@ public record ProjectCreateRequest(
     String description,
 
     @NotNull(message = "managerId is required")
-    Long managerId
+    Long managerId,
+
+    ProjectStatus status
 ) {
     @AssertTrue(message = "expectedEndDate must be after or equal to startDate")
     public boolean isValidDateRange() {
@@ -39,5 +44,14 @@ public record ProjectCreateRequest(
         }
 
         return !expectedEndDate.isBefore(startDate);
+    }
+
+    @AssertTrue(message = "actualEndDate must be after or equal to startDate")
+    public boolean isActualEndDateValid() {
+        if (startDate == null || actualEndDate == null) {
+            return true;
+        }
+
+        return !actualEndDate.isBefore(startDate);
     }
 }

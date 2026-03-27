@@ -1,7 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import type { AxiosError } from "axios";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useMembers } from "@/hooks/use-members";
 import { useProjects } from "@/hooks/use-projects";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import type { ApiErrorResponse } from "@/types/api";
+import type { MemberResponse } from "@/types/member";
 import type { ProjectResponse, ProjectCreateRequest, ProjectUpdateRequest } from "@/types/project";
 
 interface ProjectFormProps {
@@ -23,25 +28,82 @@ interface ProjectFormProps {
 
 export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
   const router = useRouter();
+  const { getMembers } = useMembers();
   const { createProject, updateProject } = useProjects();
   const [loading, setLoading] = useState(false);
+  const [members, setMembers] = useState<MemberResponse[]>([]);
+  const [membersLoading, setMembersLoading] = useState(true);
+
+  const formatCurrencyInput = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    const normalized = digits === "" ? "0" : digits;
+    const amount = Number(normalized) / 100;
+
+    return new Intl.NumberFormat("pt-BR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
+  const parseCurrencyToNumber = (value: string) => {
+    const digits = value.replace(/\D/g, "");
+    if (!digits) {
+      return 0;
+    }
+
+    return Number(digits) / 100;
+  };
 
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
     startDate: initialData?.startDate || "",
     expectedEndDate: initialData?.expectedEndDate || "",
     actualEndDate: initialData?.actualEndDate || "",
-    budget: initialData?.budget || 0,
+    budget:
+      initialData?.budget != null
+        ? formatCurrencyInput(String(Math.round(Number(initialData.budget) * 100)))
+        : "0,00",
     description: initialData?.description || "",
-    managerId: initialData?.managerId || 1, // Default info
+    managerId: initialData?.managerId ?? null,
     status: initialData?.status || "EM_ANALISE",
   });
+
+  useEffect(() => {
+    async function fetchMembers() {
+      try {
+        const data = await getMembers();
+        setMembers(data);
+
+        if (!initialData?.managerId && data.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            managerId: prev.managerId ?? data[0].id,
+          }));
+        }
+      } catch (error) {
+        console.error("Erro ao carregar membros", error);
+        toast.error("Não foi possível carregar os membros disponíveis.");
+      } finally {
+        setMembersLoading(false);
+      }
+    }
+
+    fetchMembers();
+  }, [getMembers, initialData?.managerId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "budget" || name === "managerId" ? Number(value) : value,
+      [name]: value,
+    }));
+  };
+
+  const handleBudgetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatCurrencyInput(e.target.value);
+    setFormData((prev) => ({
+      ...prev,
+      budget: formattedValue,
     }));
   };
 
@@ -53,8 +115,22 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
     setFormData((prev) => ({ ...prev, status: value as ProjectUpdateRequest["status"] }));
   };
 
+  const handleManagerChange = (value: string | null) => {
+    if (!value) {
+      return;
+    }
+
+    setFormData((prev) => ({ ...prev, managerId: Number(value) }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!formData.managerId) {
+      toast.error("Selecione um gerente responsável antes de salvar o projeto.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -64,7 +140,7 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
           startDate: formData.startDate,
           expectedEndDate: formData.expectedEndDate,
           actualEndDate: formData.actualEndDate || null,
-          budget: formData.budget,
+          budget: parseCurrencyToNumber(formData.budget),
           description: formData.description,
           managerId: formData.managerId,
           status: formData.status as any,
@@ -77,9 +153,11 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
           name: formData.name,
           startDate: formData.startDate,
           expectedEndDate: formData.expectedEndDate,
-          budget: formData.budget,
+          actualEndDate: formData.actualEndDate || null,
+          budget: parseCurrencyToNumber(formData.budget),
           description: formData.description,
           managerId: formData.managerId,
+          status: formData.status as any,
         };
         const created = await createProject(payload);
         toast.success("Projeto criado com sucesso!");
@@ -88,7 +166,10 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
       router.refresh();
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao salvar o projeto. Verifique os dados e tente novamente.");
+      const apiError = error as AxiosError<ApiErrorResponse>;
+      const message = apiError.response?.data?.message;
+
+      toast.error(message || "Erro ao salvar o projeto. Verifique os dados e tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -110,15 +191,38 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="managerId">ID do Gerente (Mock)</Label>
-          <Input
-            id="managerId"
-            name="managerId"
-            type="number"
-            value={formData.managerId}
-            onChange={handleChange}
-            required
-          />
+          <Label htmlFor="managerId">Gerente Responsável</Label>
+          <Select
+            value={formData.managerId ? String(formData.managerId) : ""}
+            onValueChange={handleManagerChange}
+          >
+            <SelectTrigger className="h-11 w-full rounded-2xl border-border/80 bg-background/85 px-4">
+              <SelectValue
+                placeholder={
+                  membersLoading
+                    ? "Carregando membros..."
+                    : members.length > 0
+                      ? "Selecione um gerente"
+                      : "Nenhum membro disponível"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {members.map((member) => (
+                <SelectItem key={member.id} value={String(member.id)}>
+                  {member.name} - {member.assignment}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {!membersLoading && members.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Cadastre pelo menos um membro antes de criar um projeto.{" "}
+              <Link className="font-medium text-primary hover:underline" href="/members">
+                Ir para membros
+              </Link>
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -150,11 +254,11 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
           <Input
             id="budget"
             name="budget"
-            type="number"
-            min="0"
-            step="0.01"
+            type="text"
+            inputMode="numeric"
             value={formData.budget}
-            onChange={handleChange}
+            onChange={handleBudgetChange}
+            placeholder="0,00"
             required
           />
         </div>
@@ -211,7 +315,7 @@ export function ProjectForm({ initialData, isEdit = false }: ProjectFormProps) {
         <Button variant="outline" type="button" onClick={() => router.back()} disabled={loading}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || membersLoading || members.length === 0}>
           {loading ? "Salvando..." : "Salvar Projeto"}
         </Button>
       </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { useProjectMembers } from "@/hooks/use-project-members";
 import { useMembers } from "@/hooks/use-members";
+import { getApiErrorMessage } from "@/lib/api/error";
 import type { ProjectMemberAllocationResponse } from "@/types/allocation";
 import type { MemberResponse } from "@/types/member";
 import { Button } from "@/components/ui/button";
@@ -54,11 +55,13 @@ export function ProjectMembers({ projectId }: { projectId: number }) {
       const allocatedIds = allocated.map((m) => m.memberId);
       const funcMembers = (allMembers as any).content || allMembers; // If paginated
       const allocatable = (Array.isArray(funcMembers) ? funcMembers : []).filter(
-        (m: MemberResponse) => !allocatedIds.includes(m.id) && m.assignment === "funcionário"
+        (m: MemberResponse) =>
+          !allocatedIds.includes(m.id)
+          && m.assignment.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase() === "funcionario"
       );
       setAvailableMembers(allocatable);
     } catch (error) {
-      console.error("Erro ao carregar membros", error);
+      toast.error(getApiErrorMessage(error, "Não foi possível carregar a equipe do projeto."));
     } finally {
       setLoading(false);
     }
@@ -74,7 +77,7 @@ export function ProjectMembers({ projectId }: { projectId: number }) {
       setSelectedMemberId("");
       fetchData();
     } catch (error) {
-      toast.error("Erro ao associar membro. Verifique as regras de negócio.");
+      toast.error(getApiErrorMessage(error, "Erro ao associar membro. Verifique as regras de negócio."));
     } finally {
       setAllocating(false);
     }
@@ -87,7 +90,7 @@ export function ProjectMembers({ projectId }: { projectId: number }) {
         toast.success("Membro removido com sucesso.");
         fetchData();
       } catch (error) {
-        toast.error("Erro ao remover membro.");
+        toast.error(getApiErrorMessage(error, "Erro ao remover membro."));
       }
     }
   };
@@ -103,7 +106,9 @@ export function ProjectMembers({ projectId }: { projectId: number }) {
   return (
     <div className="space-y-4">
       {members.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Nenhum membro associado ao projeto.</p>
+        <div className="rounded-2xl border border-dashed border-border/80 bg-muted/30 px-4 py-5 text-center text-sm text-muted-foreground">
+          Nenhum membro associado ao projeto ainda.
+        </div>
       ) : (
         <ul className="space-y-2">
           {members.map((member) => (
@@ -134,7 +139,7 @@ export function ProjectMembers({ projectId }: { projectId: number }) {
           </DialogHeader>
           <div className="py-4 space-y-4">
             <Select value={selectedMemberId} onValueChange={handleMemberSelect}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Selecione um membro" />
               </SelectTrigger>
               <SelectContent>

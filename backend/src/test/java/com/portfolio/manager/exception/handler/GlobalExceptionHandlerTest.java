@@ -51,7 +51,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldReturnBadGatewayForExternalIntegrationFailure() {
-        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/members/1");
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/mock-api/members/1");
 
         var response = handler.handleExternalIntegration(
             new ExternalIntegrationException("Member service unavailable"),

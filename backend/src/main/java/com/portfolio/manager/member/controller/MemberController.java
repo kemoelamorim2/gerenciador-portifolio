@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 @RestController
-@RequestMapping("/api/members")
+@RequestMapping("/mock-api/members")
 public class MemberController {
 
     private final MemberService memberService;

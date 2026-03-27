@@ -11,8 +11,8 @@ import com.portfolio.manager.allocation.dto.ProjectMemberAllocationRequest;
 import com.portfolio.manager.allocation.entity.ProjectMemberAllocation;
 import com.portfolio.manager.allocation.repository.ProjectMemberAllocationRepository;
 import com.portfolio.manager.exception.MemberAllocationException;
+import com.portfolio.manager.member.client.MemberClient;
 import com.portfolio.manager.member.entity.Member;
-import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.entity.Project;
 import com.portfolio.manager.project.enums.ProjectStatus;
 import com.portfolio.manager.project.enums.RiskLevel;
@@ -38,7 +38,7 @@ class ProjectMemberAllocationServiceTest {
     private ProjectRepository projectRepository;
 
     @Mock
-    private MemberRepository memberRepository;
+    private MemberClient memberClient;
 
     private ProjectMemberAllocationService allocationService;
 
@@ -47,7 +47,7 @@ class ProjectMemberAllocationServiceTest {
         allocationService = new ProjectMemberAllocationService(
             allocationRepository,
             projectRepository,
-            memberRepository
+            memberClient
         );
     }
 
@@ -58,7 +58,7 @@ class ProjectMemberAllocationServiceTest {
         ProjectMemberAllocationRequest request = new ProjectMemberAllocationRequest(2L);
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(memberRepository.findById(2L)).thenReturn(Optional.of(member));
+        when(memberClient.findById(2L)).thenReturn(member);
         when(allocationRepository.countByProjectId(1L)).thenReturn(0L);
         when(allocationRepository.existsByProjectIdAndMemberId(1L, 2L)).thenReturn(false);
         when(allocationRepository.countDistinctActiveProjectsByMemberId(2L, EnumSet.of(ProjectStatus.ENCERRADO, ProjectStatus.CANCELADO)))
@@ -81,7 +81,7 @@ class ProjectMemberAllocationServiceTest {
         Member member = new Member(2L, "Carlos", "gerente");
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(memberRepository.findById(2L)).thenReturn(Optional.of(member));
+        when(memberClient.findById(2L)).thenReturn(member);
 
         assertThrows(
             MemberAllocationException.class,
@@ -96,7 +96,7 @@ class ProjectMemberAllocationServiceTest {
         Member member = new Member(2L, "Carlos", "funcionario");
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(memberRepository.findById(2L)).thenReturn(Optional.of(member));
+        when(memberClient.findById(2L)).thenReturn(member);
         when(allocationRepository.countByProjectId(1L)).thenReturn(10L);
 
         assertThrows(
@@ -111,7 +111,7 @@ class ProjectMemberAllocationServiceTest {
         Member member = new Member(2L, "Carlos", "funcionario");
 
         when(projectRepository.findById(1L)).thenReturn(Optional.of(project));
-        when(memberRepository.findById(2L)).thenReturn(Optional.of(member));
+        when(memberClient.findById(2L)).thenReturn(member);
         when(allocationRepository.countByProjectId(1L)).thenReturn(1L);
         when(allocationRepository.existsByProjectIdAndMemberId(1L, 2L)).thenReturn(false);
         when(allocationRepository.countDistinctActiveProjectsByMemberId(2L, EnumSet.of(ProjectStatus.ENCERRADO, ProjectStatus.CANCELADO)))

@@ -6,13 +6,15 @@ import com.portfolio.manager.allocation.entity.ProjectMemberAllocation;
 import com.portfolio.manager.allocation.repository.ProjectMemberAllocationRepository;
 import com.portfolio.manager.exception.MemberAllocationException;
 import com.portfolio.manager.exception.ResourceNotFoundException;
+import com.portfolio.manager.member.client.MemberClient;
 import com.portfolio.manager.member.entity.Member;
-import com.portfolio.manager.member.repository.MemberRepository;
 import com.portfolio.manager.project.entity.Project;
 import com.portfolio.manager.project.enums.ProjectStatus;
 import com.portfolio.manager.project.repository.ProjectRepository;
+import java.text.Normalizer;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +28,16 @@ public class ProjectMemberAllocationService {
 
     private final ProjectMemberAllocationRepository allocationRepository;
     private final ProjectRepository projectRepository;
-    private final MemberRepository memberRepository;
+    private final MemberClient memberClient;
 
     public ProjectMemberAllocationService(
         ProjectMemberAllocationRepository allocationRepository,
         ProjectRepository projectRepository,
-        MemberRepository memberRepository
+        MemberClient memberClient
     ) {
         this.allocationRepository = allocationRepository;
         this.projectRepository = projectRepository;
-        this.memberRepository = memberRepository;
+        this.memberClient = memberClient;
     }
 
     @Transactional
@@ -83,8 +85,13 @@ public class ProjectMemberAllocationService {
     }
 
     private void validateMemberAssignment(Member member) {
-        if (!EMPLOYEE_ASSIGNMENT.equalsIgnoreCase(member.getAssignment())) {
-            throw new MemberAllocationException("Only members with assignment 'funcionario' can be allocated");
+        String normalizedAssignment = Normalizer.normalize(member.getAssignment(), Normalizer.Form.NFD)
+            .replaceAll("\\p{M}", "")
+            .trim()
+            .toLowerCase(Locale.ROOT);
+
+        if (!EMPLOYEE_ASSIGNMENT.equals(normalizedAssignment)) {
+            throw new MemberAllocationException("Only members with assignment 'funcionario' or 'funcionário' can be allocated");
         }
     }
 
@@ -120,8 +127,7 @@ public class ProjectMemberAllocationService {
     }
 
     private Member findMemberById(Long memberId) {
-        return memberRepository.findById(memberId)
-            .orElseThrow(() -> new ResourceNotFoundException("Member not found with id: " + memberId));
+        return memberClient.findById(memberId);
     }
 
     private ProjectMemberAllocationResponse toResponse(ProjectMemberAllocation allocation) {

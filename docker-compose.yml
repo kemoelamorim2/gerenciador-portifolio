@@ -3,6 +3,8 @@ services:
   postgresql:
     image: postgres:latest
     environment:
+      POSTGRES_DB: portfolio_db
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
     ports:
       - 5432:5432

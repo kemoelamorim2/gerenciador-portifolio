@@ -5,8 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Calendar, FileText, User, DollarSign, Activity, Users } from "lucide-react";
 import { useProjects } from "@/hooks/use-projects";
-import { useProjectMembers } from "@/hooks/use-project-members";
-import { useMembers } from "@/hooks/use-members";
+import { getApiErrorMessage } from "@/lib/api/error";
+import { getProjectStatusLabel, getRiskLevelLabel } from "@/lib/presentation/project";
 import type { ProjectResponse, ProjectStatus } from "@/types/project";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,8 +18,6 @@ export default function ProjectDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { getProjectById, deleteProject, updateProjectStatus } = useProjects();
-  const { getProjectMembers } = useProjectMembers();
-  const { getMembers } = useMembers();
 
   const [project, setProject] = useState<ProjectResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,13 +39,24 @@ export default function ProjectDetailsPage() {
     fetchProject();
   }, [projectId, getProjectById]);
 
+  const nextStatusByCurrent: Partial<Record<ProjectStatus, ProjectStatus>> = {
+    EM_ANALISE: "ANALISE_REALIZADA",
+    ANALISE_REALIZADA: "ANALISE_APROVADA",
+    ANALISE_APROVADA: "INICIADO",
+    INICIADO: "PLANEJADO",
+    PLANEJADO: "EM_ANDAMENTO",
+    EM_ANDAMENTO: "ENCERRADO",
+  };
+
+  const nextStatus = project ? nextStatusByCurrent[project.status] : undefined;
+
   const handleDelete = async () => {
     if (!project) return;
     
     // Regra: Não pode excluir se INICIADO, EM_ANDAMENTO, ENCERRADO
     const unallowedStatuses = ["INICIADO", "EM_ANDAMENTO", "ENCERRADO"];
     if (unallowedStatuses.includes(project.status)) {
-      toast.error(`Projetos com status ${project.status} não podem ser excluídos.`);
+      toast.error(`Projetos com status ${getProjectStatusLabel(project.status)} não podem ser excluídos.`);
       return;
     }
 
@@ -57,7 +66,7 @@ export default function ProjectDetailsPage() {
         toast.success("Projeto excluído com sucesso.");
         router.push("/projects");
       } catch (error) {
-        toast.error("Erro ao excluir o projeto.");
+        toast.error(getApiErrorMessage(error, "Erro ao excluir o projeto."));
       }
     }
   };
@@ -69,7 +78,7 @@ export default function ProjectDetailsPage() {
       setProject(updated);
       toast.success("Status atualizado com sucesso!");
     } catch (error) {
-      toast.error("Erro ao atualizar o status. Verifique o fluxo permitido.");
+      toast.error(getApiErrorMessage(error, "Erro ao atualizar o status. Verifique o fluxo permitido."));
     } finally {
       setStatusLoading(false);
     }
@@ -92,9 +101,9 @@ export default function ProjectDetailsPage() {
         <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-            <Badge variant="outline">{project.status}</Badge>
+            <Badge variant="outline">{getProjectStatusLabel(project.status)}</Badge>
             <Badge variant={project.riskLevel === "ALTO" ? "destructive" : "secondary"}>
-              Risco {project.riskLevel}
+              Risco {getRiskLevelLabel(project.riskLevel)}
             </Badge>
           </div>
           <p className="text-muted-foreground">ID do Projeto: {project.id}</p>
@@ -128,16 +137,34 @@ export default function ProjectDetailsPage() {
                 Avançar Status
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-wrap gap-2">
-              <span className="text-sm text-muted-foreground w-full mb-2">Fluxo: EM_ANALISE &rarr; ANALISE_REALIZADA &rarr; ANALISE_APROVADA &rarr; INICIADO &rarr; PLANEJADO &rarr; EM_ANDAMENTO &rarr; ENCERRADO</span>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("EM_ANALISE")} disabled={statusLoading}>Em Análise</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("ANALISE_REALIZADA")} disabled={statusLoading}>Análise Realizada</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("ANALISE_APROVADA")} disabled={statusLoading}>Análise Aprovada</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("INICIADO")} disabled={statusLoading}>Iniciado</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("PLANEJADO")} disabled={statusLoading}>Planejado</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("EM_ANDAMENTO")} disabled={statusLoading}>Em Andamento</Button>
-              <Button size="sm" variant="secondary" onClick={() => handleStatusChange("ENCERRADO")} disabled={statusLoading}>Encerrado</Button>
-              <Button size="sm" variant="destructive" onClick={() => handleStatusChange("CANCELADO")} disabled={statusLoading}>Cancelar Projeto</Button>
+            <CardContent className="flex flex-wrap gap-3">
+              <span className="mb-2 w-full text-sm text-muted-foreground">
+                Fluxo: EM_ANALISE &rarr; ANALISE_REALIZADA &rarr; ANALISE_APROVADA &rarr; INICIADO &rarr; PLANEJADO &rarr; EM_ANDAMENTO &rarr; ENCERRADO
+              </span>
+              {nextStatus ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleStatusChange(nextStatus)}
+                  disabled={statusLoading}
+                >
+                  Avançar para {getProjectStatusLabel(nextStatus)}
+                </Button>
+              ) : (
+                <span className="text-sm text-muted-foreground">
+                  Não há próxima etapa disponível para o status atual.
+                </span>
+              )}
+              {project.status !== "ENCERRADO" && project.status !== "CANCELADO" && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleStatusChange("CANCELADO")}
+                  disabled={statusLoading}
+                >
+                  Cancelar Projeto
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -150,7 +177,7 @@ export default function ProjectDetailsPage() {
             <CardContent className="space-y-4 text-sm">
               <div className="flex justify-between border-b pb-2">
                 <span className="text-muted-foreground flex items-center gap-2"><User className="h-4 w-4"/> Gerente</span>
-                <span className="font-medium">{project.managerName}</span>
+                <span className="font-medium">{project.managerName || "-"}</span>
               </div>
               <div className="flex justify-between border-b pb-2">
                 <span className="text-muted-foreground flex items-center gap-2"><DollarSign className="h-4 w-4"/> Orçamento</span>

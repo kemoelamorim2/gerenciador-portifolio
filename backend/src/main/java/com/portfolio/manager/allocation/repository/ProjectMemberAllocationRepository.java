@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -18,6 +19,12 @@ public interface ProjectMemberAllocationRepository extends JpaRepository<Project
     Optional<ProjectMemberAllocation> findByProjectIdAndMemberId(Long projectId, Long memberId);
 
     List<ProjectMemberAllocation> findAllByProjectId(Long projectId);
+
+    boolean existsByProjectId(Long projectId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("delete from ProjectMemberAllocation a where a.project.id = :projectId")
+    void deleteAllByProjectId(@Param("projectId") Long projectId);
 
     @Query("""
         select count(distinct a.project.id)

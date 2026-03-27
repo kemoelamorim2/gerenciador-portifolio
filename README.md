@@ -19,7 +19,7 @@ O sistema deverá permitir:
 - Cálculo dinâmico de classificação de risco
 - Controle de transição de status com fluxo fixo
 - Restrição de exclusão conforme status do projeto
-- Integração com API externa mockada para criação e consulta de membros
+- Integração com API REST externa mockada para criação e consulta de membros
 - Associação de membros aos projetos com regras de elegibilidade e limite de alocação
 - Geração de relatório resumido do portfólio
 - Paginação e filtros na listagem de projetos
@@ -135,8 +135,8 @@ docker compose up -d postgres
 O PostgreSQL ficará disponível com as seguintes credenciais locais:
 
 - Banco: `portfolio_db`
-- Usuário: `portfolio_user`
-- Senha: `portfolio_pass`
+- Usuário: `postgres`
+- Senha: `admin`
 
 ### Executando o backend
 
@@ -149,7 +149,8 @@ A API ficará disponível em:
 
 - `http://localhost:8080`
 - Health check: `http://localhost:8080/api/health`
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- API mockada de membros: `http://localhost:8080/mock-api/members`
 
 Credenciais iniciais da autenticação básica:
 
@@ -228,9 +229,8 @@ Dependências já definidas para a aplicação Spring Boot:
 - `io.jsonwebtoken:jjwt-api`
 - `io.jsonwebtoken:jjwt-impl`
 - `io.jsonwebtoken:jjwt-jackson`
-- `org.springdoc:springdoc-openapi-starter-webmvc-ui`
+- `org.springdoc:springdoc-openapi-starter-webmvc-api`
 - `org.postgresql:postgresql`
-- `spring-boot-devtools`
 - `org.projectlombok:lombok`
 - `spring-boot-starter-test`
 - `spring-security-test`
@@ -242,7 +242,7 @@ O backend deverá seguir:
 
 - Arquitetura MVC
 - Separação clara entre camadas `controller`, `service` e `repository`
-- Uso de DTOs e mapeamento entre camadas
+- Uso de DTOs e mapeamento dedicado entre camadas
 - Tratamento global de exceções
 - Clean Code e princípios SOLID
 - Persistência com JPA + Hibernate
